@@ -807,7 +807,12 @@ import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useRoute, useRouter } from 'vue-router'
 import { invoke } from '@tauri-apps/api/core'
-import type { ComponentSize, FormInstance, FormRules } from 'element-plus'
+import {
+    ElMessageBox,
+    type ComponentSize,
+    type FormInstance,
+    type FormRules,
+} from 'element-plus'
 import githubApi from '@/apis/github'
 import { usePPStore } from '@/store'
 import { readFile, writeTextFile, exists } from '@tauri-apps/plugin-fs'
@@ -1130,22 +1135,12 @@ const closeJsCodeEditDialog = () => {
     codeDialogVisible.value = false
 }
 
-// switch tauri config json or code
-const switchTauriConfig = () => {
-    isJson.value = !isJson.value
-    tauriConfigRef.value?.updateCode()
-}
-
 // icon confirm
-const confirmIcon = (base64Data: string) => {
+const confirmIcon = async (base64Data: string) => {
     cutVisible.value = false
     iconBase64.value = base64Data
     store.currentProject.icon = base64Data
-    const image = new Image()
-    image.src = base64Data
-    image.onload = () => {
-        roundIcon.value = cropImageToRound(image)
-    }
+    roundIcon.value = await cropImageToRound(base64Data)
 }
 
 // web upload icon
@@ -1760,6 +1755,14 @@ const publishPhone = async () => {
                 'build error',
                 repo
             )
+            ElMessageBox.confirm(t('publishErrorTips'), t('publishError'), {
+                confirmButtonText: t('confirm'),
+                type: 'warning',
+                center: true,
+                showCancelButton: false,
+            }).finally(() => {
+                openUrl(urlMap.questiondoc)
+            })
         }
     })
 }
@@ -1793,7 +1796,7 @@ const dispatchAction = async (repo: string) => {
             'build error',
             'PakePlus'
         )
-        return
+        throw new Error(t('dispatchError') + ': ' + message)
     } else {
         buildStatus[repo] = t('inProgress') + '...'
         buildTimer[repo] = setInterval(() => {
@@ -1939,6 +1942,13 @@ const checkBuildStatus = async (repo: string) => {
                 'build error',
                 repo
             )
+            ElMessageBox.confirm(t('publishErrorTips'), t('publishError'), {
+                confirmButtonText: t('confirm'),
+                type: 'warning',
+                center: true,
+            }).finally(() => {
+                openUrl(urlMap.questiondoc)
+            })
         } else {
             reRunFailsJobs(repo, id, html_url)
         }

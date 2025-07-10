@@ -11,7 +11,9 @@
             "asset://localhost/*",
             "https://api.github.com/*",
             "https://payjs.cn/*",
-            "https://zpayz.cn/*"
+            "https://zpayz.cn/*",
+            "https://api.pay.yungouos.com/*",
+            "https://apis.pakeplus.com/*"
         ]
     },
     "permissions": [
@@ -82,6 +84,12 @@
                 },
                 {
                     "url": "https://zpayz.cn/**"
+                },
+                {
+                    "url": "https://api.pay.yungouos.com/**"
+                },
+                {
+                    "url": "https://apis.pakeplus.com/**"
                 }
             ]
         },
@@ -89,13 +97,31 @@
             "identifier": "fs:scope",
             "allow": [
                 "**",
+                "$APPCONFIG/**",
+                "$APPLOCALDATA/**",
+                "$APPCACHE/**",
                 "$APPDATA/**",
-                "$RESOURCE/../**",
-                "$HOME/**",
-                "$DOWNLOAD/**",
-                "$ASSETS/**",
-                "$TEMP/**",
+                "$APPLOG/**",
+                "$AUDIO/**",
                 "$CACHE/**",
+                "$CONFIG/**",
+                "$DATA/**",
+                "$LOCALDATA/**",
+                "$DESKTOP/**",
+                "$DOCUMENT/**",
+                "$DOWNLOAD/**",
+                "$EXE/**",
+                "$FONT/**",
+                "$HOME/**",
+                "$PICTURE/**",
+                "$PUBLIC/**",
+                "$RUNTIME/**",
+                "$ASSETS/**",
+                "$VIDEO/**",
+                "$TEMP/**",
+                "$RESOURCE/../**",
+                "$ASSETS/**",
+                "$TEMPLATE/**",
                 "asset://localhost/**"
             ]
         },

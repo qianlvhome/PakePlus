@@ -645,6 +645,7 @@
                     <el-button @click="getPayJsCode('alipay')">
                         paypal
                     </el-button>
+                    <el-button @click="getPpApis"> ppapis </el-button>
                 </div>
                 <!-- plugin-os api -->
                 <div v-else-if="menuIndex === '2-14'" class="cardContent">
@@ -799,7 +800,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.downloadFile"
+                            :code="Codes.downloadFile.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -810,7 +811,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.downProgress"
+                            :code="Codes.downProgress.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -886,7 +887,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.openUrlCurrent"
+                            :code="Codes.openUrlCurrent.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -897,7 +898,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.openUrlNew"
+                            :code="Codes.openUrlNew.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -908,7 +909,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.openUrlBrowser"
+                            :code="Codes.openUrlBrowser.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -937,7 +938,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.runShell"
+                            :code="Codes.runShell.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -979,6 +980,24 @@
                         <el-tooltip content="auto operation" placement="bottom">
                             <el-button>{{ t('autoOperation') }}</el-button>
                         </el-tooltip>
+                        <el-tooltip
+                            content="disable right click"
+                            placement="bottom"
+                        >
+                            <el-button>全局禁止右键</el-button>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="allow some right click"
+                            placement="bottom"
+                        >
+                            <el-button>允许部分右键</el-button>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="enable right click"
+                            placement="bottom"
+                        >
+                            <el-button>允许右键</el-button>
+                        </el-tooltip>
                     </div>
                     <div class="codeDemo">
                         <h2>{{ t('removeWebElement') }}</h2>
@@ -987,7 +1006,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.removeEle"
+                            :code="Codes.removeEle.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -998,7 +1017,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.addEle"
+                            :code="Codes.addEle.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -1009,7 +1028,7 @@
                         </p>
                         <CodeEdit
                             lang="javascript"
-                            :code="Codes.modifyEle"
+                            :code="Codes.modifyEle.trim()"
                             :disabled="true"
                         />
                     </div>
@@ -1030,6 +1049,23 @@
                         <p class="description">
                             {{ t('autoOperationDesc') }}
                         </p>
+                    </div>
+                </div>
+                <!-- api/listenData -->
+                <div v-else-if="menuIndex === '3-3'" class="cardContent">
+                    <h1 class="cardTitle">listenData</h1>
+                    <p>Listen web data</p>
+                    <div class="cardBox">
+                        <el-tooltip content="open debug" placement="bottom">
+                            <el-button @click="debugHandler('open')">
+                                {{ t('openDebug') }}
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip content="close debug" placement="bottom">
+                            <el-button @click="debugHandler('close')">
+                                {{ t('closeDebug') }}
+                            </el-button>
+                        </el-tooltip>
                     </div>
                 </div>
                 <!-- api/template -->
@@ -1129,8 +1165,8 @@ import Codes from '@/utils/codes'
 import {
     arrayBufferToBase64,
     base64PngToIco,
-    basePAYJSURL,
-    baseYUNPAYURL,
+    basePayjsUrl,
+    baseYunPayUrl,
     getPaySign,
     oneMessage,
     openSelect,
@@ -1544,12 +1580,23 @@ const getPayJsCode = async (payMathod: string = 'weixin') => {
                 `${encodeURIComponent(key)}=${encodeURIComponent(order[key])}`
         )
         .join('&')
-    const payUrl = basePAYJSURL + '/api/cashier?' + queryString
+    const payUrl = basePayjsUrl + '/api/cashier?' + queryString
     console.log('payUrl', payUrl)
     const url = await QRCode.toDataURL(payUrl)
     console.log('url', url)
     dialogVisible.value = true
     qrCodeData.value = url
+}
+
+// get ppapi json
+const getPpApis = async () => {
+    const response = await payApi.getPpApis()
+    console.log('response----', response)
+    if (response.status === 200) {
+        console.log('data----', response.data)
+    } else {
+        oneMessage.error(t('getPpApisError'))
+    }
 }
 
 // get yun pay code
@@ -1622,18 +1669,18 @@ const getZPayCode = async (payMathod: string = 'alipay') => {
     order.sign = getPaySign(order, zPaySignKey)
     console.log('order----', order)
     // formData post
-    // const formData = new FormData()
-    // formData.append('pid', zPayMchId)
-    // formData.append('type', payMathod)
-    // formData.append('out_trade_no', payOrderNo.value)
-    // formData.append('notify_url', 'https://juejin.cn/')
-    // formData.append('name', 'VIP会员')
-    // formData.append('money', money.toString())
-    // formData.append('clientip', '192.168.1.100')
-    // formData.append('sign_type', 'MD5')
-    // formData.append('sign', getPaySign(formData, zPaySignKey))
-    // const response: any = await payApi.getZPayCode2(formData)
-    const response: any = await payApi.getZPayCode(order)
+    const formData = new FormData()
+    formData.append('pid', zPayMchId)
+    formData.append('type', payMathod)
+    formData.append('out_trade_no', payOrderNo.value)
+    formData.append('notify_url', 'https://juejin.cn/')
+    formData.append('name', 'VIP会员')
+    formData.append('money', money.toString())
+    formData.append('clientip', '192.168.1.100')
+    formData.append('sign_type', 'MD5')
+    formData.append('sign', getPaySign(formData, zPaySignKey))
+    const response: any = await payApi.getZPayCode2(formData)
+    // const response: any = await payApi.getZPayCode(order)
     console.log('response----', response)
     if (response.status === 200 && response.data.code === 1) {
         dialogVisible.value = true
@@ -1990,6 +2037,16 @@ const downFile = async (selPath: boolean = true) => {
     })
 }
 
+// open vconsole
+let vConsole: any = null
+const debugHandler = (type: string = 'open') => {
+    if (type === 'open') {
+        vConsole = new window.VConsole()
+    } else {
+        vConsole.destroy()
+    }
+}
+
 listen('download_progress', (event: any) => {
     console.log(`downloading fileId--- ${event.payload.fileId}`)
     console.log(`downloading downloaded--- ${event.payload.downloaded}`)
@@ -2009,6 +2066,8 @@ onMounted(() => {
     if (about) {
         defaultMenu.value = '4'
         menuIndex.value = '4'
+    } else {
+        handleMenu(menuIndex.value)
     }
 })
 </script>

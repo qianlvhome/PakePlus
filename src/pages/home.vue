@@ -148,13 +148,15 @@
                 <el-dropdown-menu class="updateMenu">
                     <el-dropdown-item
                         class="updateBtn"
-                        v-if="isTauri && store.isUpdate"
+                        v-if="
+                            isTauri && store.isUpdate && store.ppnotes.overall
+                        "
                         @click="sendUpdateEvent('update-now')"
                     >
                         {{ t('updateNow') }}
                     </el-dropdown-item>
                     <el-dropdown-item
-                        v-if="isTauri"
+                        v-else-if="isTauri && store.ppnotes.overall"
                         @click="sendUpdateEvent('update-check')"
                     >
                         {{ t('checkUpdate') }}
@@ -370,7 +372,6 @@ import {
     getBuildYmlFetch,
     oneMessage,
     upstreamUser,
-    ppRepo,
     isDev,
     syncAllBranch,
 } from '@/utils/common'
@@ -529,7 +530,7 @@ const testToken = async (tips: boolean = true) => {
                 localStorage.setItem('token', store.token)
                 store.setUser(userInfo.data)
                 try {
-                    if (userInfo.data.login !== 'Sjj1024') {
+                    if (userInfo.data.login !== upstreamUser) {
                         await forkStartShas(tips)
                     } else {
                         await commitShas(tips)
@@ -717,12 +718,6 @@ const getWebSha = async (repo: string = 'PakePlus') => {
     }
 }
 
-// open vconsole
-const openDebug = () => {
-    console.log('openDebug')
-    var _ = new window.VConsole()
-}
-
 // delete project confirm
 const delProject = () => {
     if (
@@ -747,7 +742,7 @@ const creatProject = async () => {
     creatLoading.value = true
     proExist.value = false
     if (branchName.value === 'ppdebug') {
-        openDebug()
+        var _ = new window.VConsole()
         branchName.value = ''
         creatLoading.value = false
         branchDialog.value = false
@@ -1203,7 +1198,6 @@ onMounted(() => {
                 }
 
                 .appDesc {
-                    max-width: 124px;
                     display: -webkit-box;
                     font-size: 12px;
                     color: gray;
@@ -1265,6 +1259,10 @@ onMounted(() => {
 
     .isUpdate {
         color: #e83737;
+
+        &:hover {
+            color: #e83737;
+        }
     }
 }
 

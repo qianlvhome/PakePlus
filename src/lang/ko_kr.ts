@@ -111,7 +111,7 @@ export default {
     delSuccess: '삭제 성공',
     aboutGuide:
         'PakePlus는 오픈 소스이며 무료입니다. Github Token 하나만 있으면 웹 페이지를 패키징하여 크로스 플랫폼 앱을 만들 수 있습니다. Windows, macOS, Linux 시스템을 지원하며, 미래에는 Android, iOS 등 모바일 플랫폼도 지원할 것입니다. 문제가 있으시면 저의 WeChat에 추가하세요: lanxingme (참고: PakePlus), 또는 제 이메일을 보내세요: {email}',
-    followme: '關注小神',
+    followme: '팔로우 하기',
     moreConfig: '더 많은 설정',
     superpower: '능력',
     scriptFile: '스크립트 파일',
@@ -383,4 +383,8 @@ export default {
         '스크립트에 다음 코드를 추가하여 명령을 실행할 수 있습니다',
     inputDownloadPath: '다운로드 URL을 입력하거나 다운로드 폴더를 선택하세요',
     userAgentTips: '기본 시스템 브라우저 UA',
+    selectBuildMethod: '빌드 방법 선택',
+    savePath: '저장 경로',
+    savePathTips: '클릭하여 선택하고 기본적으로 다운로드 디렉토리에 저장합니다',
+    pubNotes: '공지사항',
 }

@@ -23,10 +23,11 @@ export const fileSizeLimit = import.meta.env.VITE_FILE_LIMIT_SIZE * 1024 * 1024
 export const fileLimitNumber = import.meta.env.VITE_FILE_LIMIT_NUMBER
 
 // pay info
-export const basePAYJSURL = import.meta.env.VITE_PAYJS_DOMAIN
+export const ppApisDomain = import.meta.env.VITE_PPAPI_DOMAIN
+export const basePayjsUrl = import.meta.env.VITE_PAYJS_DOMAIN
 export const payJsMchid = import.meta.env.VITE_PAYJS_MCHID
 export const payJsSignKey = import.meta.env.VITE_PAYJS_SIGN_KEY
-export const baseYUNPAYURL = import.meta.env.VITE_YUNPAY_DOMAIN
+export const baseYunPayUrl = import.meta.env.VITE_YUNPAY_DOMAIN
 export const yunPayMchid = import.meta.env.VITE_YUNPAY_MCHID
 export const yunPaySignKey = import.meta.env.VITE_YUNPAY_SIGN_KEY
 export const rhExeUrl = import.meta.env.VITE_LOCAL_RHEXE
@@ -209,7 +210,7 @@ export const supportPP = async () => {
             await githubApi.followingUser()
             await githubApi.startProgect('PakePlus')
             await githubApi.startProgect('PakePlus-Android')
-            // await githubApi.startProgect('PakePlus-iOS')
+            await githubApi.startProgect('PakePlus-iOS')
         }
     } catch (error) {
         console.error('supportPP error', error)
@@ -286,12 +287,12 @@ export const readDirRecursively = async (path: string): Promise<string[]> => {
     return fileList
 }
 
-// 是否为开发环境
+// is dev
 export const isDev = import.meta.env.DEV
 
 export const buildTime = import.meta.env.BUILD_TIME
 
-// 是否为tauri环境
+// is tauri
 export const isTauri = (window as any).__TAURI__ ? true : false
 
 // open url or file or path
@@ -302,11 +303,11 @@ export const openUrl = async (url: string) => {
     } else if (url) {
         window.open(url, '_blank')
     } else {
-        ElMessage.error('URL或文件路径不能为空')
+        ElMessage.error('URL or file path cannot be empty')
     }
 }
 
-// 是否为字母数字
+// is alphanumeric
 export const isAlphanumeric = (str: string) => {
     const regex = /^[a-zA-Z0-9]+$/
     return regex.test(str)
@@ -579,37 +580,6 @@ export const getTauriConfFetch = async (params: any) => {
     return base64Encode(content)
 }
 
-// get init.txt file content
-export const getInitRust = async (params: any) => {
-    // 将visible: true 替换为 visible: false
-    params.config = JSON.parse(params.config)
-    params.config.visible = false
-    params.config = JSON.stringify(params.config)
-    if (isTauri) {
-        const content = await invoke('update_init_rs', params)
-        return content
-    } else {
-        let content = await readStaticFile('init.txt')
-        if (content === 'error') {
-            return 'error'
-        }
-        // 替换WINDOWCONFIG
-        content = content.replaceAll('WINDOWCONFIG', params.config)
-        // 替换STATE
-        if (!params.state) {
-            content = content.replaceAll('if true {', 'if false {')
-        }
-        if (params.injectjq) {
-            // 替换INJECTJQ
-            content = content.replaceAll(
-                '.initialization_script(include_str!("../../data/custom.js"))',
-                `.initialization_script(include_str!("../../data/jquery.min.js"))\r.initialization_script(include_str!("../../data/custom.js"))`
-            )
-        }
-        return base64Encode(content)
-    }
-}
-
 // get init.rs file content
 export const getLibRsFetch = async (params: any) => {
     let content = await readStaticFile('lib.txt')
@@ -650,13 +620,6 @@ export const getInitRustFetch = async (params: any) => {
     // 替换STATE
     if (!params.state) {
         content = content.replaceAll('if true {', 'if false {')
-    }
-    if (params.injectjq) {
-        // 替换INJECTJQ
-        content = content.replaceAll(
-            '.initialization_script(include_str!("../../data/custom.js"))',
-            `.initialization_script(include_str!("../../data/jquery.min.js"))\r.initialization_script(include_str!("../../data/custom.js"))`
-        )
     }
     return base64Encode(content)
 }
@@ -750,35 +713,49 @@ const drawAppleStylePath = (
 }
 
 // use canvas to crop image to round
-export const cropImageToRound = (image: any, padding: number = 0) => {
-    const canvas = document.createElement('canvas')
-    const ctx: any = canvas.getContext('2d')
+export const cropImageToRound = async (
+    base64Image: string,
+    padding: number = 0
+): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas')
+        const ctx: any = canvas.getContext('2d')
 
-    // set canvas size to image size
-    canvas.width = image.width
-    canvas.height = image.height
+        const image = new Image()
+        image.onload = () => {
+            // set canvas size to image size
+            canvas.width = image.width
+            canvas.height = image.height
 
-    // transparent background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0)'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+            // transparent background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0)'
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    // draw round path
-    drawAppleStylePath(ctx, canvas.width, canvas.height, padding)
+            // draw round path
+            drawAppleStylePath(ctx, canvas.width, canvas.height, padding)
 
-    // crop image
-    ctx.save()
-    ctx.clip()
-    ctx.drawImage(
-        image,
-        padding,
-        padding,
-        canvas.width - 2 * padding,
-        canvas.height - 2 * padding
-    )
-    ctx.restore()
+            // crop image
+            ctx.save()
+            ctx.clip()
+            ctx.drawImage(
+                image,
+                padding,
+                padding,
+                canvas.width - 2 * padding,
+                canvas.height - 2 * padding
+            )
+            ctx.restore()
 
-    // convert cropped image to Base64
-    return canvas.toDataURL('image/png')
+            // convert cropped image to Base64
+            resolve(canvas.toDataURL('image/png'))
+        }
+
+        image.onerror = (error) => {
+            reject(new Error('Failed to load image from base64'))
+        }
+
+        image.src = base64Image
+    })
 }
 
 // get base64 image size
